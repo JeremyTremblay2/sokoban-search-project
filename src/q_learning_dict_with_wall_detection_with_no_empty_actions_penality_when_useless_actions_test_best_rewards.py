@@ -11,8 +11,6 @@ def evaluate_rewards(reward_params):
     reward_moved = reward_params[1]
     reward_won = reward_params[2]
     reward_lost = reward_params[3]
-    reward_invalid_move = reward_params[4]
-    reward_step = reward_params[5]
 
     env = gym.make('Sokoban-v0')
     observation = env.reset()
@@ -20,7 +18,7 @@ def evaluate_rewards(reward_params):
 
     q_table = {}
     total_rewards = []
-    num_episodes = 1500
+    num_episodes = 500
     alpha = 0.5
     gamma = 0.95
     epsilon = 0.1
@@ -33,7 +31,7 @@ def evaluate_rewards(reward_params):
 
         while not done:
             index = hash(int(''.join(map(str, env.env.env.room_state.flatten()))))
-            given_reward = reward_step
+            given_reward = -0.1
 
             if not index in q_table:
                 q_table[index] = np.zeros(env.action_space.n - 1)
@@ -71,6 +69,7 @@ def evaluate_rewards(reward_params):
             elif game_reward > 2:
                 print(f"Game won: {given_reward} after moves")
                 given_reward += reward_won
+                done = True
 
             if (is_game_lost(env.env.env.room_state)):
                 given_reward += reward_lost
@@ -95,23 +94,19 @@ seed_everything(42, env)
 
 def optimize_rewards():
     space = [
-        (-10, 10),  # reward_placed
-        (-10, 10),  # reward_moved
-        (-10, 30),  # reward_won
+        (-10.0, 10.0),  # reward_placed
+        (-10.0, 10.0),  # reward_moved
+        (0, 30),  # reward_won
         (-30, 0),   # reward_lost
-        (-5, 0),     # reward_invalid_move
-        (-0.3, -0.05),     # reward_step
     ]
 
-    res = forest_minimize(evaluate_rewards, space, n_calls=30, random_state=42, n_jobs=-1)
+    res = forest_minimize(evaluate_rewards, space, n_calls=10, random_state=42, n_jobs=-1)
 
     print("Meilleures valeurs de récompense :")
     print("reward_placed: ", res.x[0])
     print("reward_moved: ", res.x[1])
     print("reward_won: ", res.x[2])
     print("reward_lost: ", res.x[3])
-    print("reward_invalid_move: ", res.x[4])
-    print("reward_step: ", res.x[5])
 
 
     with open("results/best_rewards.txt", "w") as f:
@@ -120,8 +115,6 @@ def optimize_rewards():
         f.write(f"reward_moved: {res.x[1]}\n")
         f.write(f"reward_won: {res.x[2]}\n")
         f.write(f"reward_lost: {res.x[3]}\n")
-        f.write(f"reward_invalid_move: {res.x[4]}\n")
-        f.write(f"reward_step: {res.x[5]}\n")
     
 optimize_rewards()
 
