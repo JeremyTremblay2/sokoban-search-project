@@ -170,7 +170,8 @@ for i_episode in range(num_episodes):
             pass
         elif game_reward == 9.9:
             is_current_game_lost = 0
-            episode_at_first_win = i_episode
+            if episode_at_first_win is None:
+                episode_at_first_win = i_episode
             print(f"Game won: {given_reward} after {number_of_moves} moves")
             given_reward = 10
 
