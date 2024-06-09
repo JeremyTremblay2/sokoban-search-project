@@ -79,7 +79,7 @@ for i_episode in range(num_episodes):
             print(f"A box ({info}) has been put away from an emplacement: {given_reward}")
         elif game_reward == -0.1:
             pass
-        elif game_reward == 9.9:
+        elif game_reward > 2:
             is_current_game_lost = 0
             if episode_at_first_win is None:
                 episode_at_first_win = i_episode
