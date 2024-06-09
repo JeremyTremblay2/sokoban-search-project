@@ -14,15 +14,17 @@ env = gym.make('Sokoban-v0')
 observation = env.reset()
 seed_everything(42, env)
 
-# shape = (observation.shape[0] // 16) * (observation.shape[1] // 16)
+#shape = (observation.shape[0] // 16) * (observation.shape[1] // 16)
 q_table = {}
 
-alpha = 0.1
+alpha = 0.6  # Augmenter alpha pour accélérer l'apprentissage
 gamma = 0.99
-epsilon = 1.0
-epsilon_decay = 0.995
-epsilon_min = 0.01
-num_episodes = 5000
+epsilon = 0.1  # Ajuster epsilon pour l'exploration/exploitation
+num_episodes = 2000  # Augmenter le nombre d'épisodes d'entraînement
+
+reward_box_placed = 10  # Récompense pour placer une boîte sur un emplacement cible
+reward_box_moved = -1    # Récompense pour déplacer une boîte loin d'un emplacement cible
+reward_default = -0.1    # Récompense par défaut pour les actions autres que placer ou déplacer des boîtes
 
 rewards_per_episode = []
 boxes_placed_per_episode = []
@@ -41,39 +43,45 @@ for i_episode in range(num_episodes):
     waiting_moves = 0
 
     while not done:
-        index = hash(tuple(env.env.env.room_state.flatten()))
+        index = hash(int(''.join(map(str, env.env.env.room_state.flatten()))))
 
-        if index not in q_table:
+        if not index in q_table:
             q_table[index] = np.zeros(env.action_space.n)
 
-        if random.uniform(0, 1) < epsilon:
+        if np.all(q_table[index] == q_table[index][0]):
+            action = env.action_space.sample()
+            # print(f"New state: {index}")
+
+        elif random.uniform(0, 1) < epsilon:
             action = env.action_space.sample()
         else:
             action = np.argmax(q_table[index])
-
+            # print(f"Action took: {action}")
+            
         if action == 0:
             waiting_moves += 1
 
         next_state, reward, done, info = env.env.env.step(action, observation_mode='tiny_rgb_array')
-        future_index = hash(tuple(env.env.env.room_state.flatten()))
-
-        if future_index not in q_table:
-            q_table[future_index] = np.zeros(env.action_space.n)
+        futur_index = hash(int(''.join(map(str, env.env.env.room_state.flatten()))))
+        if not futur_index in q_table:
+            q_table[futur_index] = np.zeros(env.action_space.n)
 
         if reward == 0.9:
+            reward = reward_box_placed
             boxes_placed += 1
             print(f"A box ({info}) has been put on an emplacement: {reward}")
         elif reward == -1.1:
+            reward = reward_box_moved
             boxes_moved += 1
             print(f"A box ({info}) has been put away from an emplacement: {reward}")
         elif reward == -0.1:
-            reward = -0.1
+            reward = reward_default
         elif reward >= 2:
             print("Game won: ", reward)
 
         total_reward += reward
 
-        q_table[index][action] += alpha * (reward + gamma * np.max(q_table[future_index]) - q_table[index][action])
+        q_table[index][action] += alpha * (reward + gamma * np.max(q_table[futur_index]) - q_table[index][action])
         state = next_state
 
     rewards_per_episode.append(total_reward)
@@ -81,10 +89,7 @@ for i_episode in range(num_episodes):
     boxes_placed_per_episode.append(boxes_placed)
     waiting_moves_per_episode.append(waiting_moves)
 
-    if epsilon > epsilon_min:
-        epsilon *= epsilon_decay
-
-    if i_episode % 100 == 0 and i_episode != 0:
+    if i_episode % 10 == 0 and i_episode != 0:
         print(f"Current episode: {i_episode}")
 
 plt.figure(figsize=(10, 10))
