@@ -5,6 +5,9 @@ import random
 import cv2
 import matplotlib.pyplot as plt
 import time
+import csv
+import os
+import pickle
 
 def seed_everything(seed, env):
     random.seed(seed)
@@ -15,7 +18,6 @@ env = gym.make('Sokoban-v0')
 observation = env.reset()
 seed_everything(42, env)
 
-#shape = (observation.shape[0] // 16) * (observation.shape[1] // 16)
 q_table = {}
 
 alpha = 0.5
@@ -27,20 +29,37 @@ rewards_per_episode = []
 boxes_placed_per_episode = []
 boxes_moved_per_episode = []
 waiting_moves_per_episode = []
-
-def can_push_box(board, r, c, dr, dc):
-    """
-    Vérifie si une caisse à la position (r, c) peut être poussée dans la direction (dr, dc)
-    vers une nouvelle case marchable.
-    """
-    rows, cols = board.shape
-    r_next, c_next = r + dr, c + dc
-    r_prev, c_prev = r - dr, c - dc
-
-    if 0 <= r_next < rows and 0 <= c_next < cols and 0 <= r_prev < rows and 0 <= c_prev < cols:
-        if board[r][c] in {3, 4} and board[r_next][c_next] in {1, 2, 5, 6} and board[r_prev][c_prev] in {1, 2, 5, 6}:
-            return True
-    return False
+games_lost_per_episode = []
+episode_at_first_win = None
+    
+UP = 'up'
+DOWN = 'down'
+LEFT = 'left'
+RIGHT = 'right'
+PUSH_UP = 'push_up'
+PUSH_DOWN = 'push_down'
+PUSH_LEFT = 'push_left'
+PUSH_RIGHT = 'push_right'
+            
+def determine_direction_based_on_action(action):
+    if action == 0:
+        return UP
+    elif action == 1:
+        return DOWN
+    elif action == 2:
+        return LEFT
+    elif action == 3:
+        return RIGHT
+    elif action == 4:
+        return PUSH_UP
+    elif action == 5:
+        return PUSH_DOWN
+    elif action == 6:
+        return PUSH_LEFT
+    elif action == 7:
+        return PUSH_RIGHT
+    else:
+        return None
     
 def is_game_lost(board):
     width = len(board)
@@ -59,16 +78,17 @@ for i_episode in range(num_episodes):
     seed_everything(42, env)
     state = env.reset(render_mode='tiny_rgb_array')
     done = False
-    print("-------------------------------")
 
     total_reward = 0
     boxes_placed = 0
     boxes_moved = 0
     wainting_moves = 0
+    is_current_game_lost = 1
     number_of_moves = 0
 
     while not done:
         index = hash(int(''.join(map(str, env.env.env.room_state.flatten()))))
+        given_reward = -0.1
 
         if not index in q_table:
             q_table[index] = np.zeros(env.action_space.n - 1)
@@ -86,48 +106,57 @@ for i_episode in range(num_episodes):
             action = np.argmax(q_table[index])
             # print(f"Action took: {action}")
             
-        if action == 0:
+        if action == -1:
             wainting_moves += 1
 
-        next_state, reward, done, info = env.env.env.step(action, observation_mode='tiny_rgb_array')
+        next_state, game_reward, done, info = env.env.env.step(action, observation_mode='tiny_rgb_array')
         number_of_moves += 1
             
         futur_index = hash(int(''.join(map(str, env.env.env.room_state.flatten()))))
         if not futur_index in q_table:
             q_table[futur_index] = np.zeros(env.action_space.n - 1)
 
-        if reward == 0.9:
+        if game_reward == 0.9:
             boxes_placed += 1
-            print(f"A box ({info}) has been put on an emplacement: {reward}")
-        elif reward == -1.1:
+            given_reward += 1
+            print(f"A box ({info}) has been put on an emplacement: {given_reward}")
+        elif game_reward == -1.1:
             boxes_moved += 1
-            print(f"A box ({info}) has been put away from an emplacement: {reward}")
-        elif reward == -0.1:
-            reward = -0.1
-        elif reward >= 2:
-            print("Game won: ", reward)
-            reward = 10
+            given_reward += -1
+            print(f"A box ({info}) has been put away from an emplacement: {given_reward}")
+        elif game_reward == -0.1:
+            pass
+        elif game_reward == 9.9:
+            is_current_game_lost = 0
+            if episode_at_first_win is None:
+                episode_at_first_win = i_episode
+            print(f"Game won: {given_reward} after {number_of_moves} moves")
+            given_reward += 10
 
-        if (is_game_lost(env.env.env.room_state)):
+        if (determine_direction_based_on_action(action) in [PUSH_UP, PUSH_DOWN, PUSH_LEFT, PUSH_RIGHT] and is_game_lost(env.env.env.room_state)):
             print(env.env.env.room_state)
-            print(f"Game lost: {reward} after {number_of_moves}")
-            reward = -10
-            done = 10
+            given_reward += -10
+            is_current_game_lost = 2
+            print(f"Game lost: {given_reward} after {number_of_moves} moves")
+            done = True
 
-        total_reward += reward
+        total_reward += given_reward
 
-        q_table[index][action] += alpha * (reward + gamma * np.max(q_table[futur_index]) - q_table[index][action])
+        q_table[index][action] += alpha * (given_reward + gamma * np.max(q_table[futur_index]) - q_table[index][action])
         state = next_state
 
     rewards_per_episode.append(total_reward)
     boxes_moved_per_episode.append(boxes_moved)
     boxes_placed_per_episode.append(boxes_placed)
     waiting_moves_per_episode.append(wainting_moves)
+    games_lost_per_episode.append(is_current_game_lost)
 
     if i_episode % 10 == 0 and i_episode != 0:
         print(f"Current episode: {i_episode}")
 
-plt.figure(figsize=(10, 10))
+print(f"Episode at first win: {episode_at_first_win}.")
+
+fig = plt.figure(figsize=(10, 10))
 
 plt.subplot(2, 2, 1)
 plt.plot(rewards_per_episode)
@@ -151,18 +180,43 @@ plt.title('Boxes Moved Away from Target per Episode')
 plt.grid(True)
 
 plt.subplot(2, 2, 4)
-plt.plot(waiting_moves_per_episode)
+plt.plot(games_lost_per_episode)
 plt.xlabel('Episode')
-plt.ylabel('Total wainting moves')
-plt.title('Wainting Moves per Episode (0)')
+plt.ylabel('Status (0: No, 1: Yes, 2: Yes, game lost)')
+plt.title('Was the game lost?')
 plt.grid(True)
 
 plt.tight_layout()
 plt.show()
 
 print("Training finished.\n")
-print(q_table)
-
 print("Saving results...\n")
-with open("q_table.txt", "w") as f:
-    f.write(str(q_table))
+
+results_dir = f"results/{os.path.splitext(os.path.basename(__file__))[0]}"
+os.makedirs(results_dir, exist_ok=True)
+
+with open(f"{results_dir}/q_table.bin", "wb") as f:
+    pickle.dump(q_table, f)
+
+variables = {
+    "rewards_per_episode": rewards_per_episode,
+    "boxes_placed_per_episode": boxes_placed_per_episode,
+    "boxes_moved_per_episode": boxes_moved_per_episode,
+    "waiting_moves_per_episode": waiting_moves_per_episode,
+    "games_lost_per_episode": games_lost_per_episode,
+    "episode_at_first_win": episode_at_first_win
+}
+
+with open(f"{results_dir}/variables.bin", "wb") as f:
+    pickle.dump(variables, f)
+
+with open(f"{results_dir}/results.csv", mode='w') as file:
+    writer = csv.writer(file)
+    writer.writerow(["Episode", "Total Reward", "Boxes Placed on Target", "Boxes Moved Away from Target", "Total Waiting Moves", "Game Lost"])
+    for i in range(num_episodes):
+        writer.writerow([i, rewards_per_episode[i], boxes_placed_per_episode[i], boxes_moved_per_episode[i], waiting_moves_per_episode[i], games_lost_per_episode[i]])
+    writer.writerow(["Episode at first win", episode_at_first_win])
+
+fig.savefig(f"{results_dir}/figures.png")
+
+print("Results saved.")

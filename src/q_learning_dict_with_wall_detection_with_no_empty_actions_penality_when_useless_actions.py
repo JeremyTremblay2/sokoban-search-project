@@ -126,7 +126,7 @@ for i_episode in range(num_episodes):
 
     while not done:
         index = hash(int(''.join(map(str, env.env.env.room_state.flatten()))))
-        given_reward = 0
+        given_reward = -0.1
 
         if not index in q_table:
             q_table[index] = np.zeros(env.action_space.n - 1)
@@ -145,9 +145,9 @@ for i_episode in range(num_episodes):
             agent_index = determine_agent_position(env.env.env.room_state)
             direction = determine_direction_based_on_action(action)
             if direction in [PUSH_UP, PUSH_DOWN, PUSH_LEFT, PUSH_RIGHT] and not can_push_box(env.env.env.room_state, agent_index[0], agent_index[1], direction):
-                given_reward = -0.1
+                given_reward += -0.2
             elif direction in [UP, DOWN, LEFT, RIGHT] and not can_agent_move(env.env.env.room_state, agent_index[0], agent_index[1], direction):
-                given_reward = -0.1
+                given_reward += -0.2
             # print(f"Action took: {action}")
             
         if action == -1:
@@ -162,11 +162,11 @@ for i_episode in range(num_episodes):
 
         if game_reward == 0.9:
             boxes_placed += 1
-            given_reward = 1
+            given_reward += 1
             print(f"A box ({info}) has been put on an emplacement: {given_reward}")
         elif game_reward == -1.1:
             boxes_moved += 1
-            given_reward = -1
+            given_reward += -1
             print(f"A box ({info}) has been put away from an emplacement: {given_reward}")
         elif game_reward == -0.1:
             pass
@@ -175,11 +175,11 @@ for i_episode in range(num_episodes):
             if episode_at_first_win is None:
                 episode_at_first_win = i_episode
             print(f"Game won: {given_reward} after {number_of_moves} moves")
-            given_reward = 10
+            given_reward += 10
 
         if (determine_direction_based_on_action(action) in [PUSH_UP, PUSH_DOWN, PUSH_LEFT, PUSH_RIGHT] and is_game_lost(env.env.env.room_state)):
             print(env.env.env.room_state)
-            given_reward = -10
+            given_reward += -10
             is_current_game_lost = 2
             print(f"Game lost: {given_reward} after {number_of_moves} moves")
             done = True
