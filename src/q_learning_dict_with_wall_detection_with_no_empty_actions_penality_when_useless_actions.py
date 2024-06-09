@@ -28,6 +28,7 @@ boxes_placed_per_episode = []
 boxes_moved_per_episode = []
 waiting_moves_per_episode = []
 games_lost_per_episode = []
+episode_at_first_win = None
 
 UP = 'up'
 DOWN = 'down'
@@ -169,6 +170,7 @@ for i_episode in range(num_episodes):
             pass
         elif game_reward == 9.9:
             is_current_game_lost = 0
+            episode_at_first_win = i_episode
             print(f"Game won: {given_reward} after {number_of_moves} moves")
             given_reward = 10
 
@@ -192,6 +194,8 @@ for i_episode in range(num_episodes):
 
     if i_episode % 10 == 0 and i_episode != 0:
         print(f"Current episode: {i_episode}")
+
+print(f"Episode at first win: {episode_at_first_win}.")
 
 plt.figure(figsize=(10, 10))
 
