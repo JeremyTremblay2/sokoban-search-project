@@ -5,6 +5,9 @@ import random
 import cv2
 import matplotlib.pyplot as plt
 import time
+import csv
+import os
+import pickle
 
 def seed_everything(seed, env):
     random.seed(seed)
@@ -15,13 +18,12 @@ env = gym.make('Sokoban-v0')
 observation = env.reset()
 seed_everything(42, env)
 
-#shape = (observation.shape[0] // 16) * (observation.shape[1] // 16)
 q_table = {}
 
 alpha = 0.5
 gamma = 0.95
 epsilon = 0.1
-num_episodes = 20
+num_episodes = 2000
 
 rewards_per_episode = []
 boxes_placed_per_episode = []
@@ -198,7 +200,7 @@ for i_episode in range(num_episodes):
 
 print(f"Episode at first win: {episode_at_first_win}.")
 
-plt.figure(figsize=(10, 10))
+fig = plt.figure(figsize=(10, 10))
 
 plt.subplot(2, 2, 1)
 plt.plot(rewards_per_episode)
@@ -232,8 +234,33 @@ plt.tight_layout()
 plt.show()
 
 print("Training finished.\n")
-print(q_table)
-
 print("Saving results...\n")
-with open("q_table.txt", "w") as f:
-    f.write(str(q_table))
+
+results_dir = f"results/{os.path.splitext(os.path.basename(__file__))[0]}"
+os.makedirs(results_dir, exist_ok=True)
+
+with open(f"{results_dir}/q_table.bin", "wb") as f:
+    pickle.dump(q_table, f)
+
+variables = {
+    "rewards_per_episode": rewards_per_episode,
+    "boxes_placed_per_episode": boxes_placed_per_episode,
+    "boxes_moved_per_episode": boxes_moved_per_episode,
+    "waiting_moves_per_episode": waiting_moves_per_episode,
+    "games_lost_per_episode": games_lost_per_episode,
+    "episode_at_first_win": episode_at_first_win
+}
+
+with open(f"{results_dir}/variables.bin", "wb") as f:
+    pickle.dump(variables, f)
+
+with open(f"{results_dir}/results.csv", mode='w') as file:
+    writer = csv.writer(file)
+    writer.writerow(["Episode", "Total Reward", "Boxes Placed on Target", "Boxes Moved Away from Target", "Total Waiting Moves", "Game Lost"])
+    for i in range(num_episodes):
+        writer.writerow([i, rewards_per_episode[i], boxes_placed_per_episode[i], boxes_moved_per_episode[i], waiting_moves_per_episode[i], games_lost_per_episode[i]])
+    writer.writerow(["Episode at first win", episode_at_first_win])
+
+fig.savefig(f"{results_dir}/figures.png")
+
+print("Results saved.")
