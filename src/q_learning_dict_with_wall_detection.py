@@ -21,7 +21,7 @@ q_table = {}
 alpha = 0.5
 gamma = 0.95
 epsilon = 0.1
-num_episodes = 1000
+num_episodes = 2000
 
 rewards_per_episode = []
 boxes_placed_per_episode = []
