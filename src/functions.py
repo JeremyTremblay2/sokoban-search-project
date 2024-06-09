@@ -90,7 +90,7 @@ def is_game_lost(board):
                     return True
     return False
 
-def save_and_plot_results(rewards_per_episode, boxes_placed_per_episode, boxes_moved_per_episode, waiting_moves_per_episode, games_lost_per_episode, episode_at_first_win, num_episodes, q_table):
+def save_and_plot_results(filename, rewards_per_episode, boxes_placed_per_episode, boxes_moved_per_episode, waiting_moves_per_episode, games_lost_per_episode, episode_at_first_win, num_episodes, q_table):
     print(f"Episode at first win: {episode_at_first_win}.")
 
     fig = plt.figure(figsize=(10, 10))
@@ -129,7 +129,7 @@ def save_and_plot_results(rewards_per_episode, boxes_placed_per_episode, boxes_m
     print("Training finished.\n")
     print("Saving results...\n")
 
-    results_dir = f"results/{os.path.splitext(os.path.basename(__file__))[0]}"
+    results_dir = f"results/{os.path.splitext(os.path.basename(filename))[0]}"
     os.makedirs(results_dir, exist_ok=True)
 
     with open(f"{results_dir}/q_table.bin", "wb") as f:

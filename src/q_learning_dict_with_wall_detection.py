@@ -97,4 +97,4 @@ for i_episode in range(num_episodes):
     if i_episode % 10 == 0 and i_episode != 0:
         print(f"Current episode: {i_episode}")
 
-save_and_plot_results(rewards_per_episode, boxes_placed_per_episode, boxes_moved_per_episode, waiting_moves_per_episode, games_lost_per_episode, episode_at_first_win, num_episodes, q_table)
+save_and_plot_results(__file__, rewards_per_episode, boxes_placed_per_episode, boxes_moved_per_episode, waiting_moves_per_episode, games_lost_per_episode, episode_at_first_win, num_episodes, q_table)
