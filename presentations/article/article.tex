@@ -4,12 +4,15 @@
 \usepackage[utf8]{inputenc}
 \usepackage{mathtools}
 \usepackage{graphicx}
+\setlength{\marginparwidth}{2cm}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[margin=0.9in]{geometry}
 \usepackage{multicol}
 \usepackage[nottoc, notlof, notlot]{tocbibind}
 \usepackage[backend=biber, style=authoryear]{biblatex}
 \usepackage{csquotes}
+
+\addbibresource{references.bib} % Specify the bibliography file
 
 \title{Using Q-Learning in Sokoban: Performance Enhancements and Challenges}
 
@@ -39,11 +42,11 @@ This study explores these challenges and aims to enhance Q-Learning's effectiven
 
 \section{Related Work}
 
-Previous studies have demonstrated the effectiveness of Q-Learning and deep reinforcement learning techniques in various gaming environments. Mnih et al. (2013) pioneered the use of deep Q-Learning to learn game policies directly from pixel inputs, achieving human-level performance on multiple classic Atari games.
+Previous studies have demonstrated the effectiveness of Q-Learning and deep reinforcement learning techniques in various gaming environments. Mnih et al. (2013) \cite{mnih2013playing} pioneered the use of deep Q-Learning to learn game policies directly from pixel inputs, achieving human-level performance on multiple classic Atari games.
 
-In the realm of real-time strategy games, \cite{vinyals2019grandmaster} Vinyals et al. (2019) showcased advanced Q-Learning and reinforcement learning methods in achieving Grandmaster level performance in StarCraft II. Their work exemplifies the application of sophisticated learning algorithms to master complex strategic environments.
+In the realm of real-time strategy games, Vinyals et al. (2019) \cite{vinyals2019grandmaster} showcased advanced Q-Learning and reinforcement learning methods in achieving Grandmaster level performance in StarCraft II. Their work exemplifies the application of sophisticated learning algorithms to master complex strategic environments.
 
-These studies highlight the versatility of Q-Learning in adapting to diverse gaming dynamics, from classic Atari games to complex real-time strategy scenarios like StarCraft II. In contrast, the challenges specific to Sokoban, such as sparse rewards and intricate state transitions, remain less explored. This study aims to address these challenges and enhance Q-Learning's applicability in puzzle-solving domains.
+These studies highlight the versatility of Q-Learning in adapting to diverse gaming dynamics, from classic Atari games to complex real-time strategy scenarios like StarCraft II. In contrast, the challenges specific to Sokoban, such as sparse rewards and intricate state transitions, remain less explored although we can cite the work of Sébastien Racanière et al. (2017) \cite{racaniere2017imagination} on the subject of reinforcement learning. This study aims to address these challenges in puzzle-solving domains.
 
 \section{Theoretical Foundations}
 
@@ -88,7 +91,7 @@ State representation involved converting the Sokoban map into a numerical format
 
 \subsection{Tools}
 
-The implementation was conducted using the Python programming language, leveraging the Gym Sokoban library. Gym Sokoban provides a simulated environment for the Sokoban game, facilitating the integration of reinforcement learning algorithms for experimentation and evaluation.
+The implementation was conducted using the Python programming language, leveraging the Gym Sokoban \cite{SchraderSokoban2018} library. Gym Sokoban provides a simulated environment for the Sokoban game, facilitating the integration of reinforcement learning algorithms for experimentation and evaluation.
 
 \subsection{Initialization of Q-Learning}
 
@@ -192,7 +195,7 @@ The impact of this modification is shown in Figure \ref{fig:performance_no_op}. 
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.5\textwidth,height=6cm]{Images/performance_no_op.png}
+    \includegraphics[width=0.49\textwidth,height=6cm]{Images/performance_no_op.png}
     \caption{Performance after removing the no-op action.}
     \label{fig:performance_no_op}
 \end{figure}
@@ -233,8 +236,8 @@ We then deeply investigated whether we could consider our model "stable" once it
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.5\textwidth]{Images/number_of_game_won.png}
-    \caption{Number of games won or lost after the first victory.}
+    \includegraphics[width=0.49\textwidth]{Images/number_of_game_won.png}
+    \caption{Number of endgame types after first win.}
     \label{fig:number_of_game_won}
 \end{figure}
 
