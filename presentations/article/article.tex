@@ -12,6 +12,19 @@
 \usepackage[backend=biber, style=authoryear]{biblatex}
 \usepackage{csquotes}
 
+\DeclareCiteCommand{\citeauthoryear}
+  {\boolfalse{citetracker}%
+   \boolfalse{pagetracker}%
+   \usebibmacro{prenote}}
+  {\ifciteindex
+     {\indexnames{labelname}}
+     {}%
+   \printnames{labelname}%
+   \setunit{\addspace}\printtext{\bibopenparen}%
+   \printfield{year}\bibcloseparen}
+  {\multicitedelim}
+  {\usebibmacro{postnote}}
+
 \addbibresource{references.bib} % Specify the bibliography file
 
 \title{Using Q-Learning in Sokoban: Performance Enhancements and Challenges}
@@ -42,11 +55,11 @@ This study explores these challenges and aims to enhance Q-Learning's effectiven
 
 \section{Related Work}
 
-Previous studies have demonstrated the effectiveness of Q-Learning and deep reinforcement learning techniques in various gaming environments. Mnih et al. (2013) \cite{mnih2013playing} pioneered the use of deep Q-Learning to learn game policies directly from pixel inputs, achieving human-level performance on multiple classic Atari games.
+Previous studies have demonstrated the effectiveness of Q-Learning and deep reinforcement learning techniques in various gaming environments. \textcite{mnih2013playing} pioneered the use of deep Q-Learning to learn game policies directly from pixel inputs, achieving human-level performance on multiple classic Atari games.
 
-In the realm of real-time strategy games, Vinyals et al. (2019) \cite{vinyals2019grandmaster} showcased advanced Q-Learning and reinforcement learning methods in achieving Grandmaster level performance in StarCraft II. Their work exemplifies the application of sophisticated learning algorithms to master complex strategic environments.
+In the realm of real-time strategy games, \textcite{vinyals2019grandmaster} showcased advanced Q-Learning and reinforcement learning methods in achieving Grandmaster level performance in StarCraft II. Their work exemplifies the application of sophisticated learning algorithms to master complex strategic environments.
 
-These studies highlight the versatility of Q-Learning in adapting to diverse gaming dynamics, from classic Atari games to complex real-time strategy scenarios like StarCraft II. In contrast, the challenges specific to Sokoban, such as sparse rewards and intricate state transitions, remain less explored although we can cite the work of Sébastien Racanière et al. (2017) \cite{racaniere2017imagination} on the subject of reinforcement learning. This study aims to address these challenges in puzzle-solving domains.
+These studies highlight the versatility of Q-Learning in adapting to diverse gaming dynamics, from classic Atari games to complex real-time strategy scenarios like StarCraft II. In contrast, the challenges specific to Sokoban, such as sparse rewards and intricate state transitions, remain less explored although we can cite the work of \textcite{racaniere2017imagination} on the subject of reinforcement learning. This study aims to address these challenges in puzzle-solving domains.
 
 \section{Theoretical Foundations}
 
@@ -91,7 +104,7 @@ State representation involved converting the Sokoban map into a numerical format
 
 \subsection{Tools}
 
-The implementation was conducted using the Python programming language, leveraging the Gym Sokoban \cite{SchraderSokoban2018} library. Gym Sokoban provides a simulated environment for the Sokoban game, facilitating the integration of reinforcement learning algorithms for experimentation and evaluation.
+The implementation was conducted using the Python programming language, leveraging the \textcite{SchraderSokoban2018} library. Gym Sokoban provides a simulated environment for the Sokoban game, facilitating the integration of reinforcement learning algorithms for experimentation and evaluation.
 
 \subsection{Initialization of Q-Learning}
 
