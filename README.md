@@ -9,7 +9,7 @@
     </i>
 </p>
 
-This repository contains the research and implementation details of applying Q-Learning to the classic puzzle game Sokoban. Our study explores the challenges of training an agent to solve Sokoban puzzles efficiently and the potential of Q-Learning in game AI development.
+This repository contains the research and implementation details of applying Q-Learning to the classic puzzle game Sokoban. Our study explores the challenges of training an agent to solve Sokoban puzzles efficiently and the potential of Q-Learning in game AI development. You can find [on this link](https://jeremytremblay2.github.io/sokoban-search-project/presentations/article/article.pdf) the conclusion of our research.
 
 ## Project Overview
 
