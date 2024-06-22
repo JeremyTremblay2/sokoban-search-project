@@ -17,8 +17,8 @@ seed_everything(42, env)
 #shape = (observation.shape[0] // 16) * (observation.shape[1] // 16)
 q_table = {}
 
-alpha = 0.6
-gamma = 0.99
+alpha = 0.5
+gamma = 0.95
 epsilon = 0.1
 num_episodes = 2000
 
